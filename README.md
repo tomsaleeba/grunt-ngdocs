@@ -13,7 +13,7 @@ Once that's done, add this line to your project's Gruntfile:
 grunt.loadNpmTasks('grunt-ngdocs');
 ```
 
-A full working example can be found at [https://github.com/m7r/grunt-ngdocs-example](https://github.com/m7r/grunt-ngdocs-example)
+A full working example can be found at [https://github.com/m7r/grunt-ngdocs-example]()
 
 ##Config
 Inside your `Gruntfile.js` file, add a section named *ngdocs*.
@@ -136,8 +136,6 @@ should be that of listitems inside a bootstrap navbar:
 ```
 Example: 'templates/my-nav.html'
 
-The template, if specified, is pre-processed using [grunt.template](https://github.com/gruntjs/grunt/wiki/grunt.template#grunttemplateprocess).
-
 ###Targets
 Each grunt target creates a section in the documentation app.
 
@@ -189,8 +187,7 @@ angular.module('rfx', []).directive('rAutogrow', function() {
 });
 ```
 
-Check out the [Writing AngularJS documentation wiki article](https://github.com/angular/angular.js/wiki/Writing-AngularJS-Documentation) to see what's possible,
-or take a look at the [AngularJS source code](https://github.com/angular/angular.js/tree/master/src/ng) for more examples.
+See the [AngularJS source code](https://github.com/angular/angular.js/tree/master/src/ng) for more examples.
 
 ##Batarang
 If your examples are empty you maybe have batarang enabled for the docs site.
