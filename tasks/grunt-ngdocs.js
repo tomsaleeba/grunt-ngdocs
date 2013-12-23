@@ -24,6 +24,7 @@ module.exports = function(grunt) {
           scenarioDest: '.tmp/doc-scenarios/',
           startPage: '/api',
           scripts: ['angular.js'],
+          httpScripts: [],
           styles: [],
           title: grunt.config('pkg') ?
             (grunt.config('pkg').title || grunt.config('pkg').name) :
@@ -59,6 +60,10 @@ module.exports = function(grunt) {
         //to the docs folder itself
         return gruntScriptsFolder + '/' + filename;
       }
+    });
+
+     _.map(options.httpScripts, function(src) {
+      options.scripts.push(src);
     });
 
     if (options.image) {
