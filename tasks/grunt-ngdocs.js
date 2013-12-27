@@ -25,6 +25,7 @@ module.exports = function(grunt) {
           startPage: '/api',
           scripts: ['angular.js'],
           httpScripts: [],
+          hiddenScripts: [],
           styles: [],
           title: grunt.config('pkg') ?
             (grunt.config('pkg').title || grunt.config('pkg').name) :
@@ -49,6 +50,20 @@ module.exports = function(grunt) {
         if (match && parseInt(match[1], 10) > 1.4) { options.animation = true; }
       }
 
+      if (/^((https?:)?\/\/|\.\.\/)/.test(file)) {
+        return file;
+      } else {
+        var filename = file.split('/').pop();
+        //Use path.join here because we aren't sure if options.dest has / or not
+        grunt.file.copy(file, path.join(options.dest, gruntScriptsFolder, filename));
+
+        //Return the script path: doesn't have options.dest in it, it's relative
+        //to the docs folder itself
+        return gruntScriptsFolder + '/' + filename;
+      }
+    });
+
+    options.hiddenScripts = _.map(options.hiddenScripts, function(file) {
       if (/^((https?:)?\/\/|\.\.\/)/.test(file)) {
         return file;
       } else {
@@ -147,6 +162,7 @@ module.exports = function(grunt) {
     var options = setup.__options,
         content, data = {
           scripts: options.scripts,
+          hiddenScripts: options.hiddenScripts,
           styles: options.styles,
           sections: _.keys(setup.sections).join('|'),
           discussions: options.discussions,
