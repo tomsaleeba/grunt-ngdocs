@@ -26,6 +26,7 @@ module.exports = function(grunt) {
           scripts: ['angular.js'],
           httpScripts: [],
           hiddenScripts: [],
+          versionedFiles: {},
           styles: [],
           title: grunt.config('pkg') ?
             (grunt.config('pkg').title || grunt.config('pkg').name) :
@@ -163,6 +164,7 @@ module.exports = function(grunt) {
         content, data = {
           scripts: options.scripts,
           hiddenScripts: options.hiddenScripts,
+          versionedFiles: options.versionedFiles,
           styles: options.styles,
           sections: _.keys(setup.sections).join('|'),
           discussions: options.discussions,
@@ -188,7 +190,7 @@ module.exports = function(grunt) {
     setup.startPage = options.startPage;
     setup.discussions = options.discussions;
     setup.scripts = _.map(options.scripts, function(url) { return path.basename(url); });
-    grunt.file.write(setup.__file, 'NG_DOCS=' + JSON.stringify(setup, replacer, 2) + ';');
+    grunt.file.write(setup.__file, 'NG_DOCS=' + JSON.stringify(setup, replacer, 2) + '; ' + 'VERSIONED_FILES=' + JSON.stringify(options.versionedFiles, replacer, 2) + '; ');
   }
 
 
