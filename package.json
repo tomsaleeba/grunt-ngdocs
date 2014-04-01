@@ -1,11 +1,11 @@
 {
   "name": "grunt-ngdocs",
-  "version": "0.1.7",
+  "version": "0.1.7-custom9",
   "description": "grunt plugin for angularjs documentation",
   "main": "tasks",
   "repository": {
     "type": "git",
-    "url": "https://github.com/m7r/grunt-ngdocs.git"
+    "url": "https://github.com/c0bra/grunt-ngdocs"
   },
   "keywords": [
     "gruntplugin",
@@ -30,10 +30,4 @@
   "bugs": {
     "url": "https://github.com/m7r/grunt-ngdocs/issues"
   },
-  "_id": "grunt-ngdocs@0.1.7",
-  "dist": {
-    "shasum": "06335f838670fba3084c2034333894e6d2e40164"
-  },
-  "_from": "grunt-ngdocs@",
-  "_resolved": "https://registry.npmjs.org/grunt-ngdocs/-/grunt-ngdocs-0.1.7.tgz"
 }
