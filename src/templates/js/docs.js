@@ -175,14 +175,16 @@ docsApp.serviceFactory.openPlunkr = function(templateMerge, formPostData, loaded
         '  </head>\n' +
         '  <body>\n\n' +
         '{{indexContents}}\n\n' +
+        '{{postScriptDeps}}' +
         '  </body>\n' +
         '</html>\n';
     var scriptDeps = '';
+    var postScriptDeps = '';
     angular.forEach(loadedUrls.base, function(url) {
-      url = url.replace(/"(\/release.+?)"/g, "\"http://ui-grid.info$1\"");
+      url = url.replace(/(\/release.+?$)/g, "http://ui-grid.info$1");
 
       // scriptDeps += '    <script src="' + url + '"></script>\n';
-      var ext = url.name.split(/\./).pop();
+      var ext = url.split(/\./).pop();
       if (ext == 'css') {
         scriptDeps += '    <link rel="stylesheet" href="' + url + '" type="text/css">\n';
       }
@@ -192,19 +194,23 @@ docsApp.serviceFactory.openPlunkr = function(templateMerge, formPostData, loaded
     });
     angular.forEach(allFiles, function(file) {
       var ext = file.name.split(/\./).pop();
-        if (ext == 'css') {
-          scriptDeps += '    <link rel="stylesheet" href="' + file.name + '" type="text/css">\n';
-        } else if (ext == 'js' && file.name !== 'angular.js') {
-        scriptDeps += '    <script src="' + file.name + '"></script>\n';
-      }
+          if (ext == 'css') {
+            scriptDeps += '    <link rel="stylesheet" href="' + file.name + '" type="text/css">\n';
+          }
+          else if (ext == 'js' && file.name !== 'angular.js') {
+            if (file.name === 'app.js') {
+              postScriptDeps += '    <script src="' + file.name + '"></script>\n';
+            }
+            else {
+              scriptDeps += '    <script src="' + file.name + '"></script>\n';
+            }
+          }
     });
-
-    var indexContents = content.html[0].content;
-    indexContents.replace(/"(\/release.+?)"/g, "\"http://ui-grid.info$1\"");
 
     indexProp = {
       module: content.module,
       scriptDeps: scriptDeps,
+      postScriptDeps: postScriptDeps,
       indexContents: content.html[0].content
     };
 
@@ -213,7 +219,7 @@ docsApp.serviceFactory.openPlunkr = function(templateMerge, formPostData, loaded
       if (file.content && file.name != 'index.html') {
         if (file.name === 'app.js') {
           var contents = file.content;
-          contents = contents.replace(/(\/data.+?\.json)/g, "http://ui-grid.info$1");
+          contents = contents.replace(/(\/data.+?\.json)/g, "https://rawgit.com/angular-ui/ui-grid.info/gh-pages$1");
           postData['files[' + file.name + ']'] = contents;
         }
         else {
