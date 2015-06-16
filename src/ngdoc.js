@@ -392,7 +392,12 @@ Doc.prototype = {
     function flush() {
       if (atName) {
         var text = trim(atText.join('\n')), match;
-        if (atName == 'param') {
+        if (atName == 'module') {
+          match = text.match(/^\s*(\S+)\s*$/);
+          if (match) {
+            self.moduleName = match[1];
+          }
+        } else if (atName == 'param') {
           match = text.match(/^\{([^}]+)\}\s+(([^\s=]+)|\[(\S+)=([^\]]+)\])\s+(.*)/);
                              //  1      1    23       3   4   4 5      5  2   6  6
           if (!match) {
