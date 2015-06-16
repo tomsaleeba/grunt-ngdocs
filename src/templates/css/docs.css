@@ -396,6 +396,7 @@ ul.events > li > h3 {
 
 .type-hint {
   display:inline-block;
+  background: #999;
 }
 
 .variables-matrix .type-hint {
