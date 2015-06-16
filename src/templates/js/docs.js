@@ -279,6 +279,15 @@ docsApp.controller.DocsController = function($scope, $location, $window, $timeou
    Publish methods
    ***********************************/
 
+  $scope.skipToContent = function(id){
+    $timeout(function(){
+      var elt = document.getElementById(id);
+      if (elt){
+        elt.focus();
+      }
+    });
+  };
+
   $scope.navClass = function(page1, page2) {
     return {
       first: this.$first,
