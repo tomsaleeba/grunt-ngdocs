@@ -489,7 +489,7 @@ Doc.prototype = {
       });
     }
 
-    dom.h(title(this, this.ngdoc == 'overview'), function() {
+    dom.h(title(this), function() {
       notice('deprecated', 'Deprecated API', self.deprecated);
       if (self.ngdoc === 'error') {
         minerrMsg = lookupMinerrMsg(self);
@@ -973,7 +973,7 @@ var GLOBALS = /^angular\.([^\.]+)$/,
     MODULE_TYPE = /^([^\.]+)\..+\.([A-Z][^\.]+)$/;
 
 
-function title(doc, overview) {
+function title(doc) {
   if (!doc.name) return doc.name;
   var match,
       module = doc.moduleName,
