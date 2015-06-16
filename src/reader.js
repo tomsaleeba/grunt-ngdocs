@@ -9,17 +9,17 @@ var ngdoc = require('./ngdoc.js'),
     NEW_LINE = /\n\r?/;
 
 function process(content, file, section, options) {
-  if (/\.js$/.test(file)) {
-    processJsFile(content, file, section).forEach(function(doc) {
-      exports.docs.push(doc);
-    });
-  } else if (file.match(/\.ngdoc$/)) {
+  if (file.match(/\.ngdoc$/)) {
     var header = '@section ' + section + '\n';
     exports.docs.push(new ngdoc.Doc(header + content.toString(),file, 1, options).parse());
+  } else {
+    processJsFile(content, file, section, options).forEach(function(doc) {
+      exports.docs.push(doc);
+    });
   }
 }
 
-function processJsFile(content, file, section) {
+function processJsFile(content, file, section, options) {
   var docs = [];
   var lines = content.toString().split(NEW_LINE);
   var text;
@@ -42,7 +42,7 @@ function processJsFile(content, file, section) {
       text = text.replace(/^\n/, '');
       if (text.match(/@ngdoc/)){
         //console.log(file, startingLine)
-        docs.push(new ngdoc.Doc('@section ' + section + '\n' + text, file, startingLine).parse());
+        docs.push(new ngdoc.Doc('@section ' + section + '\n' + text, file, startingLine, lineNumber, options).parse());
       }
       doc = null;
       inDoc = false;
