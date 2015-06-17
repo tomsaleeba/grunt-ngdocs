@@ -198,7 +198,7 @@
           <input type="text" class="form-control" ng-model="search" placeholder="search the docs" aria-label="Search the documentation"
                  tabindex="0" accesskey="s" class="search-query" focused="focused">
           <% } %>
-          <a href="" role="button" class="sr-only sr-only-focusable" ng-click="skipToContent('nav-tag-0')" tabindex="0">
+          <a href="" role="button" class="sr-only sr-only-focusable" ng-click="skipToContent('nav-tag')" tabindex="0">
             <div class="section">
               <span class="skiplink-text">Skip to main content</span>
             </div>
@@ -270,10 +270,10 @@
         </form>
       </div>
       <div class="col-xs-8 col-sm-9">
-        <ul class="breadcrumb">
+        <ul id="nav-tag" class="breadcrumb" tabindex="-1">
           <li ng-repeat="crumb in breadcrumb">
-            <div id="nav-tag-{{$index}}" tabindex="-1" ng-hide="crumb.url">{{crumb.name}}</div>
-            <a id="nav-tag-{{$index}}" tabindex="0" ng-show="crumb.url" href="{{crumb.url}}">{{crumb.name}}</a>
+            <div ng-hide="crumb.url">{{crumb.name}}</div>
+            <a tabindex="0" ng-show="crumb.url" href="{{crumb.url}}">{{crumb.name}}</a>
             <div ng-show="crumb.url"></div>
           </li>
         </ul>
