@@ -11,12 +11,20 @@ var reader = require('../src/reader.js'),
     path = require('path'),
     vm = require('vm');
 
+var repohosts = [
+  { re: /https?:\/\/github.com\/([^\/]+\/[^\/]+)|git@github.com:(.*)\.git/,
+    sourceLink: 'https://github.com/{{repo}}/blob/{{sha}}/{{file}}#L{{codeline}}',
+    editLink: 'https://github.com/{{repo}}/edit/master/{{file}}'
+  }
+];
+
 module.exports = function(grunt) {
   var _ = grunt.util._,
       templates = path.resolve(__dirname, '../src/templates');
 
   grunt.registerMultiTask('ngdocs', 'build documentation', function() {
     var start = now(),
+        pkg = getPackage(),
         done = this.async(),
         options = this.options({
           dest: 'docs/',
@@ -28,44 +36,40 @@ module.exports = function(grunt) {
           hiddenScripts: [],
           versionedFiles: {},
           styles: [],
-          title: grunt.config('pkg') ?
-            (grunt.config('pkg').title || grunt.config('pkg').name) :
-            '',
-          html5Mode: true,
-          animation: false
+          title: pkg.title || pkg.name || '',
+          html5Mode: false,
+          editExample: true,
+          sourceLink: true,
+          editLink: true
         }),
         section = this.target === 'all' ? 'api' : this.target,
         setup;
 
     //Copy the scripts into their own folder in docs, unless they are remote or default angular.js
+    var linked = /^((https?:)?\/\/|\.\.\/)/;
     var gruntScriptsFolder = 'grunt-scripts';
+    var gruntStylesFolder = 'grunt-styles';
+
     options.scripts = _.map(options.scripts, function(file) {
       if (file === 'angular.js') {
-        options.animation = true;
         return 'js/angular.min.js';
       }
 
-      if (!options.animation) {
-        //force animation in new angular versions from CDN or copied from a folder like angular-1.x.x/
-        var match = file.match(/1\.(\d\.\d+)\/angular\./);
-        if (match && parseInt(match[1], 10) > 1.4) { options.animation = true; }
-      }
-
-      if (/^((https?:)?\/\/|\.\.\/)/.test(file)) {
+      if (linked.test(file)) {
         return file;
-      } else {
-        var filename = file.split('/').pop();
-        //Use path.join here because we aren't sure if options.dest has / or not
-        grunt.file.copy(file, path.join(options.dest, gruntScriptsFolder, filename));
-
-        //Return the script path: doesn't have options.dest in it, it's relative
-        //to the docs folder itself
-        return gruntScriptsFolder + '/' + filename;
       }
+
+      var filename = file.split('/').pop();
+      //Use path.join here because we aren't sure if options.dest has / or not
+      grunt.file.copy(file, path.join(options.dest, gruntScriptsFolder, filename));
+
+      //Return the script path: doesn't have options.dest in it, it's relative
+      //to the docs folder itself
+      return gruntScriptsFolder + '/' + filename;
     });
 
     options.hiddenScripts = _.map(options.hiddenScripts, function(file) {
-      if (/^((https?:)?\/\/|\.\.\/)/.test(file)) {
+      if (linked.test(file)) {
         return file;
       } else {
         var filename = file.split('/').pop();
@@ -82,31 +86,31 @@ module.exports = function(grunt) {
       options.scripts.push(src);
     });
 
-    if (options.image) {
-      if (!/^((https?:)?\/\/|\.\.\/)/.test(options.image)) {
-        grunt.file.copy(options.image, path.join(options.dest, 'img', options.image));
-        options.image = "img/" + options.image;
-      }
+    if (options.image && !linked.test(options.image)) {
+      grunt.file.copy(options.image, path.join(options.dest, gruntStylesFolder, options.image));
+      options.image = gruntStylesFolder + '/' + options.image;
     }
 
     options.styles = _.map(options.styles, function(file) {
-      if (/^((https?:)?\/\/|\.\.\/)/.test(file)) {
+      if (linked.test(file)) {
         return file;
-      } else {
-        var filename = file.split('/').pop();
-        grunt.file.copy(file, path.join(options.dest, 'css', filename));
-        return 'css/' + filename;
       }
+      var filename = file.split('/').pop();
+      grunt.file.copy(file, path.join(options.dest, 'css', filename));
+      return 'css/' + filename;
     });
 
     setup = prepareSetup(section, options);
 
     grunt.log.writeln('Generating Documentation...');
 
+    prepareLinks(pkg, options);
+
     reader.docs = [];
     this.files.forEach(function(f) {
+      options.isAPI = f.api || section == 'api';
       setup.sections[section] = f.title || 'API Documentation';
-      setup.apis[section] = f.api || section == 'api';
+      setup.apis[section] = options.isAPI;
       f.src.filter(exists).forEach(function(filepath) {
         var content = grunt.file.read(filepath);
         reader.process(content, filepath, section, options);
@@ -124,6 +128,8 @@ module.exports = function(grunt) {
       grunt.file.write(file, doc.html());
     });
 
+    ngdoc.checkBrokenLinks(reader.docs, setup.apis, options);
+
     setup.pages = _.union(setup.pages, ngdoc.metadata(reader.docs));
 
     if (options.navTemplate) {
@@ -138,15 +144,63 @@ module.exports = function(grunt) {
     done();
   });
 
+  function getPackage() {
+    var pkg = grunt.config('pkg');
+    try {
+      pkg = grunt.file.readJSON('package.json');
+    } catch (e) {}
+    return pkg || {};
+  }
+
+  function makeLinkFn(tmpl, values) {
+      if (!tmpl || tmpl === true) { return false; }
+      if (/\{\{\s*sha\s*\}\}/.test(tmpl)) {
+        var shell = require('shelljs');
+        var sha = shell.exec('git rev-parse HEAD', { silent: true });
+        values.sha = ('' + sha.output).slice(0, 7);
+      }
+      tmpl = _.template(tmpl, undefined, {'interpolate': /\{\{(.+?)\}\}/g});
+      return function(file, line, codeline) {
+        values.file = file;
+        values.line = line;
+        values.codeline = codeline;
+        values.filepath = path.dirname(file);
+        values.filename = path.basename(file);
+        return tmpl(values);
+      };
+    }
+
+  function prepareLinks(pkg, options) {
+    var values = {version: pkg.version || 'master'};
+    var url = (pkg.repository || {}).url;
+
+    if (url && options.sourceLink === true || options.sourceEdit === true) {
+      repohosts.some(function(host) {
+        var match = url.match(host.re);
+        if (match) {
+          values.repo = match[1];
+          if (host.sourceLink && options.sourceLink === true) {
+            options.sourceLink = host.sourceLink;
+          }
+          if (host.editLink && options.editLink === true) {
+            options.editLink = host.editLink;
+          }
+        }
+        return match;
+      });
+    }
+    options.sourceLink = makeLinkFn(options.sourceLink, values);
+    options.editLink = makeLinkFn(options.editLink, values);
+  }
+
   function prepareSetup(section, options) {
     var setup, data, context = {},
         file = path.resolve(options.dest, 'js/docs-setup.js');
     if (exists(file)) {
       // read setup from file
-      data = grunt.file.read(file),
+      data = grunt.file.read(file);
       vm.runInNewContext(data, context, file);
       setup = context.NG_DOCS;
-      setup.apis = setup.apis || {}; // make backward compatible to 0.1.1, remove in 0.2.0
       // keep only pages from other build tasks
       setup.pages = _.filter(setup.pages, function(p) {return p.section !== section;});
     } else {
@@ -175,9 +229,7 @@ module.exports = function(grunt) {
           titleLink: options.titleLink,
           imageLink: options.imageLink,
           bestMatch: options.bestMatch,
-          trackBy: function(id, animation) {
-            return options.animation ? ' track by ' + id + (animation ? '" ng-animate="' + animation : '') : '';
-          }
+          deferLoad: !!options.deferLoad
         };
 
     // create index.html
@@ -187,6 +239,7 @@ module.exports = function(grunt) {
 
     // create setup file
     setup.html5Mode = options.html5Mode;
+    setup.editExample = options.editExample;
     setup.startPage = options.startPage;
     setup.discussions = options.discussions;
     setup.scripts = _.map(options.scripts, function(url) { return path.basename(url); });
