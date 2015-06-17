@@ -396,7 +396,7 @@ ul.events > li > h3 {
 
 .type-hint {
   display:inline-block;
-  background: #999;
+  background: #23241f;
 }
 
 .variables-matrix .type-hint {
@@ -418,7 +418,7 @@ ul.events > li > h3 {
 }
 
 .type-hint-array {
-  background:#F90;;
+  background:#F90;
 }
 
 .type-hint-boolean {
