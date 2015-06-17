@@ -12,7 +12,7 @@ var reader = require('../src/reader.js'),
     vm = require('vm');
 
 var repohosts = [
-  { re: /https?:\/\/github.com\/([^\/]+\/[^\/]+)|git@github.com:(.*)\.git/,
+  { re: /https?:\/\/github.com\/([^\/]+\/[^\/]+)\.git|https?:\/\/github.com\/([^\/]+\/[^\/]+)|git@github.com:(.*)\.git/,
     sourceLink: 'https://github.com/{{repo}}/blob/{{sha}}/{{file}}#L{{codeline}}',
     editLink: 'https://github.com/{{repo}}/edit/master/{{file}}'
   }
