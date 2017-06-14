@@ -32,6 +32,11 @@ docsApp.directive.ngHtmlWrapLoaded = function(reindentCode, templateMerge, loade
         html = "<!doctype html>\n<html ng-app{{module}}>\n  <head>\n{{head:4}}  </head>\n  <body>\n{{body:4}}  </body>\n</html>";
 
       angular.forEach(loadedUrls.base, function(dep) {
+        var ext = dep.split(/\./).pop();
+        if (ext == 'css') {
+          properties.head += '<link rel="stylesheet" href="' + dep + '" type="text/css">\n';
+          return;
+        }
         properties.head += '<script src="' + dep + '"></script>\n';
       });
 
